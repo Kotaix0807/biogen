@@ -22,9 +22,10 @@ TrieNodePtr createNode() {
     return newNode;
 }
 
-void FreeTrie(TrieNodePtr tree){
-    //Liberar memoria
-    return;
+void freeTrie(TrieNodePtr tree, int len){
+    for(int i = 0; i < len; i++){
+        free(tree->children[i]);
+    }
 }
 
 int LoadTrie(TrieNodePtr tree){
@@ -43,21 +44,17 @@ int LoadTrie(TrieNodePtr tree){
     return len;
 }
 
-int bioStart(TrieNodePtr tree, const char* numb){
+void bioStart(TrieNodePtr tree, const char* numb){
     if(numb == NULL || atoi(numb) <= 0){
         printf("Error: Invalid Tree length\n");
-        return EXIT_FAILURE;
     }
     FILE *ADN_txt = fopen("adn.txt", "w+");
     if(!ADN_txt){
         printf("Error: something went wrong with adn.txt\n");
-        return EXIT_FAILURE;
     }
     fputs(numb, ADN_txt);
     fputc('\n', ADN_txt);
     fclose(ADN_txt);
-    FreeTrie(tree);
-    return EXIT_SUCCESS;
 }
 
 
