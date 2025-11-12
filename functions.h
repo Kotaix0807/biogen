@@ -79,7 +79,12 @@ int binarySearch(const char *arr, int low, int high, char target){
         return binarySearch(arr, low, mid - 1, target);// izquierda
     }
 }
-
+/**
+ * @brief Valida secuencia de ADN, si es correcta, devuelve 0, si no, devuelve 1
+ * 
+ * @param seq Secuencia de ADN
+ * @return int 
+ */
 int validateSeq(const char *seq){
     const char valid[] = {'A', 'C', 'G', 'T'};
     const int n_valids = sizeof(valid) / sizeof(valid[0]);
