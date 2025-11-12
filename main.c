@@ -1,26 +1,31 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "functions.h"
 #include "nodes.h"
 #include "tries.h"
-#include "functions.h"
 
 #define MAX_ARGS 4
 
 int main(void){
+    //Variables globales del programa
     int instance = 1;
     char *strns[MAX_ARGS];
+
+    //Variables globales del arbol
     TrieNodePtr root = createNode();
+    int adn_len = 0;
 
-    printf("Welcome to BioGen program!:\nIf you need help, type:\n'help' || 'h'\n\n");
+    printf("Welcome to BioGen program!\nIf you need help, type:\n'help' || 'h'\n\n");
 
-    int adn_len = LoadTrie(root);
+    //int adn_len = loadTrie(root);
     while(instance){
 
         printf(">bio ");
         int len = escanf(strns, MAX_ARGS, 1024);
         if(len < 1){
             printf("Error, non arguments in\n");
+            continue;
         }
 
         //Comandos
@@ -35,7 +40,12 @@ int main(void){
         }
         else if(!strcmp(strns[0], "start")){
             printf("Initializing tree...\n\n");
-            bioStart(root, strns[1]);
+            bioStart(root, strns[1], &adn_len);
+            printf("Gen large: %d\n", adn_len);
+        }
+        else if(!strcmp(strns[0], "new")){
+            printf("Creating new sequence...\n");
+            bioNew(strns[1]);
         }
         else if(!strcmp(strns[0], "read")){
             printf("Reading tree...\n\n");

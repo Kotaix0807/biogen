@@ -6,15 +6,46 @@
 
 struct TrieNode {
     struct TrieNode *children[ADN];
-    int isEnd;
+    int isLeaf;
 };
 
 typedef struct TrieNode* TrieNodePtr;
+/**
+ * @brief Transforma de gen -> int (Interpreta el gen como entero)
+ * 
+ * @param gen el gen leido.
+ * @return int del gen.
+ */
+int genToInt(char gen){
+    switch(gen)
+    {
+        case('A'):{
+            return 0;
+            break;
+        }
+        case('C'):{
+            return 1;
+            break;
+        }
+        case('G'):{
+            return 2;
+            break;
+        }
+        case('T'):{
+            return 3;
+            break;
+        }
+        default:{
+            return -1;
+        }
+    }
+    return -1;
+}
 
 TrieNodePtr createNode() {
     TrieNodePtr newNode = (TrieNodePtr)malloc(sizeof(struct TrieNode));
     if (newNode) {
-        newNode->isEnd = 0;
+        newNode->isLeaf = 0;
         for (int i = 0; i < ADN; i++) {
             newNode->children[i] = NULL;
         }
@@ -28,7 +59,7 @@ void freeTrie(TrieNodePtr tree, int len){
     }
 }
 
-int LoadTrie(TrieNodePtr tree){
+/*int loadTrie(TrieNodePtr tree){
     int len = 0;
     tree = createNode();
     FILE *ADN_txt = fopen("adn.txt", "r");
@@ -42,20 +73,42 @@ int LoadTrie(TrieNodePtr tree){
         printf("FIle adn.txt not found\n");
     }
     return len;
-}
+}*/
 
-void bioStart(TrieNodePtr tree, const char* numb){
-    if(numb == NULL || atoi(numb) <= 0){
+void bioStart(TrieNodePtr tree, const char *arg, int *adn_length){
+    if(arg == NULL || atoi(arg) <= 0){
         printf("Error: Invalid Tree length\n");
+        return;
     }
+    *adn_length = atoi(arg);
     FILE *ADN_txt = fopen("adn.txt", "w+");
     if(!ADN_txt){
         printf("Error: something went wrong with adn.txt\n");
+        return;
     }
-    fputs(numb, ADN_txt);
-    fputc('\n', ADN_txt);
     fclose(ADN_txt);
 }
 
-
-
+void bioNew(const char *arg){
+    if(arg == NULL){
+        printf("Error: invalid sequence\n\n");
+        return;
+    }
+    //size_t sizeArg = strlen(arg);
+        /*
+        if(genToInt(arg[i]) == -1){
+            printf("Error: Your sequence must have this characters:\n");
+            printf("'A', 'C', 'G', 'T'\n");
+        }*/
+    if(validateSeq(arg)){
+        return;
+    }
+    FILE *ADN_txt = fopen("adn.txt", "w+");
+    if(!ADN_txt){
+        printf("Error: something went wrong with adn.txt\n\n");
+        return;
+    }
+    printf("Good, now puting string on file...\n");
+    fputs(arg, ADN_txt);
+    fclose(ADN_txt);
+}
