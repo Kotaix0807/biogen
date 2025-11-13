@@ -1,6 +1,47 @@
+#ifndef TOOLS_H
+#define TOOLS_H
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
+
+#define ADN 4
+#define MAX_LEN 20
+#define MIN_LEN 2
+
+/**
+ * @brief Transforma de gen -> int (Interpreta el gen como entero)
+ * 
+ * @param gen el gen leido.
+ * @return int del gen.
+ */
+int genToInt(char gen){
+    switch(gen)
+    {
+        case('A'):{
+            return 0;
+            break;
+        }
+        case('C'):{
+            return 1;
+            break;
+        }
+        case('G'):{
+            return 2;
+            break;
+        }
+        case('T'):{
+            return 3;
+            break;
+        }
+        default:{
+            return -1;
+        }
+    }
+    return -1;
+}
+
 /**
  * @brief 
  * Escanea strings hasta que el usuario presiona Enter.
@@ -53,6 +94,7 @@ void freeArgs(char* strns[], int length)
     }
     for(int i = 0; i < length; i++){
         free(strns[i]);
+        strns[i] = NULL;
     }
 }
 
@@ -89,11 +131,57 @@ int validateSeq(const char *seq){
     const char valid[] = {'A', 'C', 'G', 'T'};
     const int n_valids = sizeof(valid) / sizeof(valid[0]);
 
-    for (size_t i = 0; seq[i] != '\0'; ++i) {
+    for (size_t i = 0; seq[i] != '\0'; i++) {
         if (binarySearch(valid, 0, n_valids - 1, seq[i]) == -1) {
-            printf("Error: char '%c' is not allowed on sequence\n\n", seq[i]);
+            printf("Error: char '%c' is not allowed on sequence\n", seq[i]);
             return 1;
         }
     }
     return 0;
 }
+
+int randNumb(int min, int max){
+    if(min == max || min > max){
+        printf("Error: invalid values for random selection\n");
+        return 0;
+    }
+    return min + rand() % (max - min + 1);
+}
+
+char *randAdnSeq(){
+    srand(time(NULL));
+    size_t len = (size_t)randNumb(MIN_LEN, MAX_LEN);
+    if(!len)
+        return NULL;
+    char *seq = malloc(len + 1);
+    if(!seq){
+        return NULL;
+    }
+    const char alphabet[ADN] = {'A', 'C', 'G', 'T'};
+    for(size_t i = 0; i < len; ++i){
+        seq[i] = alphabet[rand() % ADN];
+    }
+    seq[len] = '\0';
+    return seq;
+}
+
+char *insertRandAdn(){
+    printf("Creating new random sequence...\n");
+    char *buffer = randAdnSeq();
+    if(!buffer){
+        printf("Error: failed to generate random sequence\n");
+        return NULL;
+    }
+    FILE *rewrite = fopen("adn.txt", "w+");
+    if(!rewrite){
+        printf("Error: something went wrong with adn.txt\n");
+        free(buffer);
+        return NULL;
+    }
+    fputs(buffer, rewrite);
+    fclose(rewrite);
+    printf("New sequence inserted succesfully: [%s]\nRead 'adn.txt'\n\n", buffer);
+    return buffer;
+}
+
+#endif // TOOLS_H
