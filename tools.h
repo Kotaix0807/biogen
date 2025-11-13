@@ -8,7 +8,7 @@
 
 #define ADN 4
 #define MAX_LEN 20
-#define MIN_LEN 2
+#define MIN_LEN 5
 
 /**
  * @brief Transforma de gen -> int (Interpreta el gen como entero)
@@ -19,19 +19,19 @@
 int genToInt(char gen){
     switch(gen)
     {
-        case('A'):{
+        case 'A':{
             return 0;
             break;
         }
-        case('C'):{
+        case 'C':{
             return 1;
             break;
         }
-        case('G'):{
+        case 'G':{
             return 2;
             break;
         }
-        case('T'):{
+        case 'T':{
             return 3;
             break;
         }
@@ -134,6 +134,8 @@ int validateSeq(const char *seq){
     for (size_t i = 0; seq[i] != '\0'; i++) {
         if (binarySearch(valid, 0, n_valids - 1, seq[i]) == -1) {
             printf("Error: char '%c' is not allowed on sequence\n", seq[i]);
+            printf("Your sequence must have this characters:\n");
+            printf("'A', 'C', 'G', 'T'\n");
             return 1;
         }
     }

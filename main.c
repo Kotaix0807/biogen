@@ -16,7 +16,7 @@ int main(void){
     TrieNodePtr root = createNode();
     int adn_len = 0;
 
-    printf("Welcome to BioGen program!\nIf you need help, type:\n'help' || 'h'\n\n");
+    printf("Welcome to BioGen program!\nType: 'help' || 'h' for help\n\n");
 
     //int adn_len = loadTrie(root);
     while(instance){
@@ -29,15 +29,15 @@ int main(void){
 
         //Comandos
         if(!strcmp(strns[0], "help") || !strcmp(strns[0], "h") || !strcmp(strns[0], "Help")){
-            printf("Commands:\nbio start <numb> -> Trie max length\n");
-            printf("bio new <DNA_Sequence> -> create a new DNA Sequence\n");
-            printf("bio new random -> create a new random DNA Sequence\n");
-            printf("bio read -> read adn.txt file\n");
-            printf("bio search <gen> -> Shows gen position\n");
-            printf("bio max -> shows most repeated gens\n");
-            printf("bio min -> shows last repeated gens\n");
-            printf("bio all -> shows all gens\n");
-            printf("bio exit -> delete adn.txt file and clear program\n\n");
+            printf("Commands:\n\tbio start <numb> -> Trie max length\n");
+            printf("\tbio new <DNA_Sequence> -> create a new DNA Sequence\n");
+            printf("\tbio new random -> create a new random DNA Sequence\n");
+            printf("\tbio read -> read adn.txt file\n");
+            printf("\tbio search <gen> -> Shows gen position\n");
+            printf("\tbio max -> shows most repeated gens\n");
+            printf("\tbio min -> shows last repeated gens\n");
+            printf("\tbio all -> shows all gens\n");
+            printf("\tbio exit -> delete adn.txt file and clear program\n\n");
         }
         else if(!strcmp(strns[0], "start")){
             printf("Initializing tree...\n");
@@ -45,7 +45,7 @@ int main(void){
         }
         else if(!strcmp(strns[0], "read")){
             printf("Reading tree...\n");
-            bioRead();
+            bioRead(root, adn_len);
         }
         else if(!strcmp(strns[0], "new")){
             printf("Creating new sequence...\n");
@@ -53,6 +53,7 @@ int main(void){
         }
         else if(!strcmp(strns[0], "search")){
             printf("Finding '%s'\n\n", strns[1]);
+            bioSearch(root, adn_len, strns[1]);
         }
         else if(!strcmp(strns[0], "max")){
             printf("Finding max...\n\n");
@@ -66,7 +67,8 @@ int main(void){
         else if(!strcmp(strns[0], "exit")){
             printf("Cleaning cache and exiting...\n");
             //Exiting...
-            printf("Bye!\n");
+            bioExit(root);
+            printf("Bye!\n\n");
             instance = 0;
         }
         else if(strns[0] != NULL){
