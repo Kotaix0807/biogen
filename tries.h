@@ -43,28 +43,30 @@ TrieNodePtr createTrie(TrieNodePtr root, int max_height, const char *seq){
     }
 
     size_t seq_len = strlen(seq);
-    size_t limit = seq_len;
-    if (limit > (size_t)max_height) {
-        limit = (size_t)max_height;
-    }
-    TrieNodePtr current = root;
-
-    for(size_t i = 0; i < limit; i++){
-        int gen = genToInt(seq[i]);
-        if(gen < 0){
-            printf("Error: char '%c' is not valid for trie insertion\n", seq[i]);
-            return root;
+    for(size_t start = 0; start < seq_len; ++start){
+        TrieNodePtr current = root;
+        size_t limit = seq_len - start;
+        if(limit > (size_t)max_height){
+            limit = (size_t)max_height;
         }
-        if(current->children[gen] == NULL){
-            current->children[gen] = createNode();
-            if(current->children[gen] == NULL){
-                printf("Error: unable to allocate trie node\n");
+        for(size_t depth = 0; depth < limit; ++depth){
+            char base = seq[start + depth];
+            int gen = genToInt(base);
+            if(gen < 0){
+                printf("Error: char '%c' is not valid for trie insertion\n", base);
                 return root;
             }
+            if(current->children[gen] == NULL){
+                current->children[gen] = createNode();
+                if(current->children[gen] == NULL){
+                    printf("Error: unable to allocate trie node\n");
+                    return root;
+                }
+            }
+            current = current->children[gen];
         }
-        current = current->children[gen];
+        current->isLeaf = 1;
     }
-    current->isLeaf = 1;
     return root;
 }
 
