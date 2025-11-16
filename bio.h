@@ -8,17 +8,19 @@
 #include "tries.h"
 #include "tools.h"
 
-void bioStart(TrieNodePtr tree, const char *arg, int *adn_length){
+void bioStart(TrieNodePtr tree, const char *arg, size_t *adn_length){
     if(adn_length == NULL){
-        printf("Error: invalid DNA length buffer\n\n");
+        printf("Error: invalid ADN length buffer\n\n");
         return;
     }
     if(arg == NULL || atoi(arg) <= 0){
         printf("Error: Invalid Tree length\n\n");
         return;
     }
-    *adn_length = atoi(arg);
-
+    size_t new_len = (size_t)atoi(arg);
+    if(tree && (isTrie(tree) || tree->pos_count > 0)){
+        clearTrie(tree);
+    }
     FILE *ADN_txt = fopen("adn.txt", "r");
     if(!ADN_txt){
         printf("Warning: 'adn.txt' file does not exists\nCreating new file...\n");
@@ -54,7 +56,26 @@ void bioStart(TrieNodePtr tree, const char *arg, int *adn_length){
     } else {
         fclose(ADN_txt);
     }
-    printf("Tree created with height %d\n", *adn_length);
+
+    char *seq = getAdn();
+    if(seq){
+        if(validateSeq(seq)){
+            printf("Error: invalid sequence in 'adn.txt'\n");
+            free(seq);
+            seq = insertRandAdn();
+            if(!seq){
+                printf("Error: unable to build tree with random sequence\n\n");
+                return;
+            }
+        }
+        createTrie(tree, (int)new_len, seq);
+        free(seq);
+    } else {
+        printf("Warning: trie cleared but no ADN sequence loaded\n");
+    }
+
+    *adn_length = new_len;
+    printf("Tree created with height %ld\n", *adn_length);
     printf("Done!\n\n");
 }
 
@@ -77,83 +98,316 @@ void bioNew(char *arg[]){
         return;
     }
     fputs(arg[1], ADN_txt);
-    printf("DNA sequence: [%s]\n", arg[1]);
+    printf("ADN sequence: [%s]\n", arg[1]);
     fclose(ADN_txt);
     printf("Done!\n\n");
 }
 
-void bioRead(TrieNodePtr root, int max_height){
-    FILE *ADN_txt = fopen("adn.txt", "rb");
-    if(!ADN_txt){
-        printf("Error: file 'adn.txt' not found\n");
-        printf("type: 'start <tree_length>' to initialize a new tree\n\n");
-        return;
+void bioRead(TrieNodePtr root, size_t len){
+    if(isTrie(root) || root->pos_count > 0){
+        clearTrie(root);
     }
-
-    if(fseek(ADN_txt, 0, SEEK_END) != 0){
-        printf("Error: unable to read 'adn.txt' size\n");
-        fclose(ADN_txt);
-        return;
-    }
-
-    long file_size = ftell(ADN_txt);
-    if(file_size < 0){
-        printf("Error: unable to determine 'adn.txt' size\n");
-        fclose(ADN_txt);
-        return;
-    }
-
-    rewind(ADN_txt);
-    size_t large = (size_t)file_size;
-    char *seq = malloc(large + 1);
-    if(!seq){
-        printf("Error: malloc failed\n");
-        fclose(ADN_txt);
-        return;
-    }
-
-    size_t read_bytes = fread(seq, 1, large, ADN_txt);
-    seq[read_bytes] = '\0';
-    fclose(ADN_txt);
-
-    if(read_bytes == 0){
-        printf("Warning: 'adn.txt' is empty\n\n");
-        free(seq);
-        seq = insertRandAdn();
-        if(seq){
+    char *seq = getAdn();
+    if(seq){
+        if(validateSeq(seq)){
+            printf("Error: invalid sequence in 'adn.txt'\n");
             free(seq);
+            seq = insertRandAdn();
+            if(seq){
+                free(seq);
+            }
+            return;
         }
-        return;
-    }
-    
-    printf("DNA sequence: [%s]\n", seq); //<---------- HALF-END
-    
-    if(validateSeq(seq)){
-        printf("Error: invalid sequence in 'adn.txt'\n");
+        
+        //Aqui deberia empezar a crear el arbol
+        createTrie(root, (int)len, seq);
         free(seq);
-        seq = insertRandAdn();
-        if(seq){
-            free(seq);
-        }
+        printf("Done!\n\n");
+    }
+    else{
         return;
     }
-    
-    //Aqui deberia empezar a crear el arbol
-    root = createTrie(root, max_height, seq);//createTrie();
-    if(!root){
-        return;
-    }
-    free(seq);
-    printf("Done!\n\n");
 }
 
 void bioExit(TrieNodePtr root){
     freeTrie(root);
 }
 
-void bioSearch(TrieNodePtr root, int len, const char *seq){
-    
-    printf("Search dice: %d\n", search(root, len, seq));
+void bioSearch(TrieNodePtr root, size_t len, const char *seq){
+    search(root, len, seq, 1);
+    printf("Done!\n\n");
+}
+
+void bioAll(TrieNodePtr root, size_t len){
+    if(len <= 0){
+        printf("Error: invalid tree length\n\n");
+        return;
+    }
+    if(root == NULL){
+        printf("Error: trie not initialized\n\n");
+        return;
+    }
+    if(!isTrie(root)){
+        printf("Warning: trie is empty, try running 'bio read' first\n\n");
+        return;
+    }
+
+    char *sequence = getAdn();
+    if(!sequence){
+        return;
+    }
+    if(validateSeq(sequence)){
+        printf("Error: invalid ADN sequence in 'adn.txt'\n\n");
+        free(sequence);
+        return;
+    }
+
+    size_t seq_len = strlen(sequence);
+    if(seq_len < len){
+        printf("Warning: ADN sequence is shorter than the requested group size (%ld)\n\n", len);
+        free(sequence);
+        return;
+    }
+
+    char *buffer = malloc(len + 1);
+    if(!buffer){
+        printf("Error: unable to allocate buffer for groups\n\n");
+        free(sequence);
+        return;
+    }
+
+    printf("All ADN groups (size %ld):\n", len);
+    for(size_t start = 0; start + len <= seq_len; ++start){
+        memcpy(buffer, sequence + start, len);
+        buffer[len] = '\0';
+        search(root, len, buffer, 1);
+    }
+
+    free(buffer);
+    free(sequence);
+    printf("Done!\n\n");
+}
+
+static char *copySequence(const char *src, size_t len){
+    char *dup = malloc(len + 1);
+    if(!dup){
+        return NULL;
+    }
+    memcpy(dup, src, len);
+    dup[len] = '\0';
+    return dup;
+}
+
+void bioMax(TrieNodePtr root, size_t len){
+    if(len <= 0){
+        printf("Error: invalid tree length\n\n");
+        return;
+    }
+    if(root == NULL){
+        printf("Error: trie not initialized\n\n");
+        return;
+    }
+    if(!isTrie(root)){
+        printf("Warning: trie is empty, try running 'bio read' first\n\n");
+        return;
+    }
+
+    char *seq = getAdn();
+    if(!seq){
+        return;
+    }
+    if(validateSeq(seq)){
+        printf("Error: invalid ADN sequence in 'adn.txt'\n\n");
+        free(seq);
+        return;
+    }
+
+    size_t seq_len = strlen(seq);
+    if(seq_len < len){
+        printf("Warning: ADN sequence is shorter than the requested group size (%ld)\n\n", len);
+        free(seq);
+        return;
+    }
+
+    char *buffer = malloc(len + 1);
+    if(!buffer){
+        printf("Error: unable to allocate buffer for groups\n\n");
+        free(seq);
+        return;
+    }
+
+    int first = 0;
+    printf("All ADN groups (size %ld):\n", len);
+    for(size_t start = 0; start + len <= seq_len; ++start){
+        memcpy(buffer, seq + start, len);
+        buffer[len] = '\0';
+        int current = search(root, len, buffer, 0);
+        if(current == -2){
+            free(buffer);
+            free(seq);
+            return;
+        }
+        if(current > first){
+            first = current;
+        }
+    }
+
+    if(first < 2){
+        printf("No repeated sequences of size %ld were found\n\n", len);
+        free(buffer);
+        free(seq);
+        return;
+    }
+
+    size_t max_slots = seq_len - len + 1;
+    char **tops = calloc(max_slots, sizeof(char*));
+    if(!tops){
+        printf("Error: unable to store maximum sequences\n\n");
+        free(buffer);
+        free(seq);
+        return;
+    }
+    size_t stored = 0;
+
+    for(size_t start = 0; start + len <= seq_len; ++start){
+        memcpy(buffer, seq + start, len);
+        buffer[len] = '\0';
+        int current = search(root, len, buffer, 0);
+        if(current != first){
+            continue;
+        }
+        int repeated = 0;
+        for(size_t i = 0; i < stored; ++i){
+            if(strcmp(tops[i], buffer) == 0){
+                repeated = 1;
+                break;
+            }
+        }
+        if(!repeated){
+            tops[stored] = copySequence(buffer, len);
+            if(!tops[stored]){
+                printf("Error: unable to copy max sequence\n\n");
+                break;
+            }
+            stored++;
+        }
+    }
+
+    printf("Most repeated sequences (size %ld, %d repetitions):\n", len, first);
+    for(size_t i = 0; i < stored; ++i){
+        search(root, len, tops[i], 1);
+        free(tops[i]);
+    }
+    free(tops);
+    free(buffer);
+    free(seq);
+    printf("Done!\n\n");
+}
+
+void bioMin(TrieNodePtr root, size_t len){
+    if(len <= 0){
+        printf("Error: invalid tree length\n\n");
+        return;
+    }
+    if(root == NULL){
+        printf("Error: trie not initialized\n\n");
+        return;
+    }
+    if(!isTrie(root)){
+        printf("Warning: trie is empty, try running 'bio read' first\n\n");
+        return;
+    }
+
+    char *seq = getAdn();
+    if(!seq){
+        return;
+    }
+    if(validateSeq(seq)){
+        printf("Error: invalid ADN sequence in 'adn.txt'\n\n");
+        free(seq);
+        return;
+    }
+
+    size_t seq_len = strlen(seq);
+    if(seq_len < len){
+        printf("Warning: ADN sequence is shorter than the requested group size (%ld)\n\n", len);
+        free(seq);
+        return;
+    }
+
+    char *buffer = malloc(len + 1);
+    if(!buffer){
+        printf("Error: unable to allocate buffer for groups\n\n");
+        free(seq);
+        return;
+    }
+
+    int min_count = 0;
+    printf("All ADN groups (size %ld):\n", len);
+    for(size_t start = 0; start + len <= seq_len; ++start){
+        memcpy(buffer, seq + start, len);
+        buffer[len] = '\0';
+        int current = search(root, len, buffer, 0);
+        if(current == -2){
+            free(buffer);
+            free(seq);
+            return;
+        }
+        if(current > 0 && (min_count == 0 || current < min_count)){
+            min_count = current;
+        }
+    }
+
+    if(min_count == 0){
+        printf("No matching sequences of size %ld were found\n\n", len);
+        free(buffer);
+        free(seq);
+        return;
+    }
+
+    size_t max_slots = seq_len - len + 1;
+    char **mins = calloc(max_slots, sizeof(char*));
+    if(!mins){
+        printf("Error: unable to store minimum sequences\n\n");
+        free(buffer);
+        free(seq);
+        return;
+    }
+    size_t stored = 0;
+
+    for(size_t start = 0; start + len <= seq_len; ++start){
+        memcpy(buffer, seq + start, len);
+        buffer[len] = '\0';
+        int current = search(root, len, buffer, 0);
+        if(current != min_count){
+            continue;
+        }
+        int repeated = 0;
+        for(size_t i = 0; i < stored; ++i){
+            if(strcmp(mins[i], buffer) == 0){
+                repeated = 1;
+                break;
+            }
+        }
+        if(!repeated){
+            mins[stored] = copySequence(buffer, len);
+            if(!mins[stored]){
+                printf("Error: unable to copy min sequence\n\n");
+                break;
+            }
+            stored++;
+        }
+    }
+
+    printf("Least repeated sequences (size %ld, %d repetitions):\n", len, min_count);
+    for(size_t i = 0; i < stored; ++i){
+        search(root, len, mins[i], 1);
+        free(mins[i]);
+    }
+    free(mins);
+    free(buffer);
+    free(seq);
+    printf("Done!\n\n");
 }
 
 #endif // BIO_H

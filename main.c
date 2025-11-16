@@ -14,7 +14,7 @@ int main(void){
     
     //Variables globales del arbol
     TrieNodePtr root = createNode();
-    int adn_len = 0;
+    size_t adn_len = 0;
 
     printf("Welcome to BioGen program!\nType: 'help' || 'h' for help\n\n");
 
@@ -30,8 +30,8 @@ int main(void){
         //Comandos
         if(!strcmp(strns[0], "help") || !strcmp(strns[0], "h") || !strcmp(strns[0], "Help")){
             printf("Commands:\n\tbio start <numb> -> Trie max length\n");
-            printf("\tbio new <DNA_Sequence> -> create a new DNA Sequence\n");
-            printf("\tbio new random -> create a new random DNA Sequence\n");
+            printf("\tbio new <ADN_Sequence> -> create a new ADN Sequence\n");
+            printf("\tbio new random -> create a new random ADN Sequence\n");
             printf("\tbio read -> read adn.txt file\n");
             printf("\tbio search <gen> -> Shows gen position\n");
             printf("\tbio max -> shows most repeated gens\n");
@@ -50,6 +50,12 @@ int main(void){
         else if(!strcmp(strns[0], "new")){
             printf("Creating new sequence...\n");
             bioNew(strns);
+            if(adn_len > 0){
+                printf("Reloading tree with current sequence...\n");
+                bioRead(root, adn_len);
+            } else {
+                printf("Warning: run 'bio start <n>' before loading the sequence into the tree\n\n");
+            }
         }
         else if(!strcmp(strns[0], "search")){
             printf("Finding '%s'\n\n", strns[1]);
@@ -57,18 +63,19 @@ int main(void){
         }
         else if(!strcmp(strns[0], "max")){
             printf("Finding max...\n\n");
+            bioMax(root, adn_len);
         }
         else if(!strcmp(strns[0], "min")){
             printf("Finding min...\n\n");
+            bioMin(root, adn_len);
         }
         else if(!strcmp(strns[0], "all")){
             printf("Showing tree\n\n");
+            bioAll(root, adn_len);
         }
         else if(!strcmp(strns[0], "exit")){
             printf("Cleaning cache and exiting...\n");
-            //Exiting...
             bioExit(root);
-            printf("Bye!\n\n");
             instance = 0;
         }
         else if(strns[0] != NULL){
@@ -76,6 +83,6 @@ int main(void){
         }
         freeArgs(strns, numb_str);
     }
+    printf("Bye!\n");
     return 0;
-
 }
