@@ -1,5 +1,0 @@
-start 2
-read
-start 3
-read
-exit
