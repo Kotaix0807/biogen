@@ -68,7 +68,7 @@ void bioStart(TrieNodePtr tree, const char *arg, size_t *adn_length){
                 return;
             }
         }
-        createTrie(tree, (int)new_len, seq);
+        createTrie(tree, new_len, seq);
         free(seq);
     } else {
         printf("Warning: trie cleared but no ADN sequence loaded\n");

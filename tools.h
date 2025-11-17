@@ -141,7 +141,13 @@ int validateSeq(const char *seq){
     }
     return 0;
 }
-
+/**
+ * @brief Genera un numero entero aleatorio
+ * 
+ * @param min 
+ * @param max 
+ * @return int 
+ */
 int randNumb(int min, int max){
     if(min == max || min > max){
         printf("Error: invalid values for random selection\n");
@@ -149,7 +155,11 @@ int randNumb(int min, int max){
     }
     return min + rand() % (max - min + 1);
 }
-
+/**
+ * @brief Genera una secuencia de ADN aleatoria y la devuelve
+ * 
+ * @return char* 
+ */
 char *randAdnSeq(){
     srand(time(NULL));
     size_t len = (size_t)randNumb(MIN_LEN, MAX_LEN);
@@ -166,7 +176,10 @@ char *randAdnSeq(){
     seq[len] = '\0';
     return seq;
 }
-
+/**
+ * @brief Inserta una secuencia aleatoria de ADN en 'adn.txt' y la devuelve
+ * @return char* 
+ */
 char *insertRandAdn(){
     printf("Creating new random sequence...\n");
     char *buffer = randAdnSeq();
@@ -185,7 +198,10 @@ char *insertRandAdn(){
     printf("New sequence inserted succesfully: [%s]\nRead 'adn.txt'\n\n", buffer);
     return buffer;
 }
-
+/**
+ * @brief Obtiene el string de ADN actual desde el archivo 'adn.txt' y lo devuelve
+ * @return char* 
+ */
 char *getAdn(){
     FILE *ADN_txt = fopen("adn.txt", "rb");
     if(!ADN_txt){

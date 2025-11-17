@@ -29,7 +29,12 @@ TrieNodePtr createNode() {
     }
     return newNode;
 }
-
+/**
+ * @brief Verifica si el arbol existe
+ * 
+ * @param root 
+ * @return int 
+ */
 int isTrie(TrieNodePtr root){
     if(!root){
         return 0;
@@ -44,7 +49,13 @@ int isTrie(TrieNodePtr root){
     }
     return 0;
 }
-
+/**
+ * @brief Agrega conteo de posiciones en el nodo
+ * 
+ * @param node 
+ * @param position 
+ * @return int 
+ */
 int addPosition(TrieNodePtr node, int position){
     if(!node){
         return 1;
@@ -67,7 +78,14 @@ int addPosition(TrieNodePtr node, int position){
     node->positions[node->pos_count++] = position;
     return 0;
 }
-
+/**
+ * @brief Crea el arbol a partir de la secuencia de ADN
+ * 
+ * @param root 
+ * @param len 
+ * @param seq 
+ * @return TrieNodePtr 
+ */
 TrieNodePtr createTrie(TrieNodePtr root, size_t len, const char *seq){
     if(seq == NULL || seq[0] == '\0'){
         printf("Error: failed to create Trie, invalid sequence\n\n");
@@ -116,6 +134,15 @@ TrieNodePtr createTrie(TrieNodePtr root, size_t len, const char *seq){
     return root;
 }
 
+/**
+ * @brief Busca fragmentos de ADN en el arbol junto con sus posiciones
+ * 
+ * @param root arbol
+ * @param len profundidad
+ * @param seq secuencia de ADN
+ * @param print imprimir resultado o no
+ * @return int 
+ */
 int search(TrieNodePtr root, size_t len, const char *seq, int print){
     if(seq == NULL || seq[0] == '\0'){
         printf("Error: no sequence in\n\n");
@@ -171,7 +198,11 @@ int search(TrieNodePtr root, size_t len, const char *seq, int print){
         printf("\n");
     return (int)current->pos_count;
 }
-
+/**
+ * @brief Liberar memoria de un nodo de manera recursiva
+ * 
+ * @param tree 
+ */
 void freeTrie(TrieNodePtr tree){
     if(!tree){
         return;
@@ -182,7 +213,11 @@ void freeTrie(TrieNodePtr tree){
     free(tree->positions);
     free(tree);
 }
-
+/**
+ * @brief Limpia el arbol verificando si tiene hijos, si los hay, libera memoria de forma inmediata
+ * 
+ * @param root 
+ */
 void clearTrie(TrieNodePtr root){
     if(!root){
         return;
